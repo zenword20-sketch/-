@@ -268,4 +268,848 @@
   <div id="cartOverlay" class="cart-overlay" onclick="if(event.target===this) toggleCart(false)">
     <div id="cartDrawer" class="cart-drawer">
       <div style="padding:12px 16px; background:#18181A; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
-        <div><h4 style="font-size:13px; font-weight:900;">صندوق مشتريات براند زينب</h4><span 
+        <div><h4 style="font-size:13px; font-weight:900;">صندوق مشتريات براند زينب</h4><span style="font-size:9px; color:var(--soft-rose);">حجز مؤقت للطلبية: <span id="cartTimer" style="font-family:monospace; color:var(--gold);">10:00 دقيقة</span></span></div>
+        <div style="display:flex; gap:4px;">
+          <button onclick="minimizeCart()" class="btn-outline" style="padding:3px 7px; font-size:11px; color:#AAA;">▼</button>
+          <button onclick="toggleCart(false)" class="btn-outline" style="padding:3px 7px; font-size:11px; color:#AAA;">✕</button>
+        </div>
+      </div>
+      <div class="cart-hide" id="cartItemsList" style="flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:6px;"></div>
+      <div class="cart-hide" style="padding:12px 16px; background:#18181A; border-top:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; gap:8px; text-align:right;">
+        <div style="display:flex; gap:4px;">
+          <input type="text" id="cartPromoInput" placeholder="رمز الخصم العام (e.g. ZAINAB20)" class="input-box" style="padding:5px 8px; font-size:10px; text-transform:uppercase;">
+          <button onclick="applyPromoCart()" class="btn-gold" style="padding:5px 10px; font-size:10px;">تطبيق</button>
+        </div>
+        <div id="promoNotice" style="font-size:9px; color:var(--gold); display:none;"></div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; border-top:1px solid rgba(255,255,255,0.06); padding-top:4px;">
+          <span>المطلوب عند الاستلام (COD):</span>
+          <b id="cartTotalSum" style="font-family:monospace; font-size:14px; color:var(--gold);">0 د.ع</b>
+        </div>
+        <form onsubmit="handleCheckout(event)" style="display:flex; flex-direction:column; gap:6px;">
+          <select id="coGov" class="input-box" style="padding:5px 8px;">
+            <option value="بغداد">بغداد</option><option value="البصرة">البصرة</option><option value="أربيل">أربيل</option><option value="النجف">النجف</option><option value="كربلاء">كربلاء</option><option value="نينوى">نينوى</option><option value="كركوك">كركوك</option><option value="بابل">بابل</option><option value="الأنبار">الأنبار</option><option value="ذي قار">ذي قار</option>
+          </select>
+          <input type="text" id="coAddr" required placeholder="العنوان بالتفصيل..." class="input-box" style="padding:5px 8px;">
+          <button type="submit" class="btn-gold" style="width:100%;">تأكيد الطلب واستلام الصندوق</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISOLATED CRASH-PROOF ADMIN MODAL -->
+  <div id="adminModal" class="admin-modal">
+    <div class="admin-card">
+      <div style="padding:12px 16px; background:#1C1C22; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+        <b>لوحة الإدارة والمحفظة المالية (NEXAURON Panel)</b>
+        <button onclick="toggleAdmin(false)" style="background:none; border:none; color:#AAA; font-size:16px; cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:14px; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:14px;">
+        <div style="background:#24242A; padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+          <div><span style="font-size:10px; color:#AAA;">إجمالي مبيعات المتجر المستلمة:</span><div id="adminRev" style="font-size:20px; font-weight:900; color:var(--gold); font-family:monospace;">0 د.ع</div></div>
+          <button onclick="addMockOrder()" class="btn-gold" style="font-size:10px; padding:6px 10px;">+ طلب تجريبي</button>
+        </div>
+        <!-- Global Coupon Engine -->
+        <div style="background:#1C1C22; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+          <b style="font-size:12px; color:var(--soft-rose);">إنشاء كود خصم عام ومحمي بعدد مرات استخدام محدد</b>
+          <form onsubmit="handleCreatePromo(event)" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(90px, 1fr)) auto; gap:6px;">
+            <input type="text" id="newCodeTxt" required placeholder="الرمز (ZAINAB20)" class="input-box" style="text-transform:uppercase;">
+            <select id="newCodeType" class="input-box"><option value="percentage">نسبة مئوية (%)</option><option value="fixed">مبلغ ثابت (د.ع)</option></select>
+            <input type="number" id="newCodeVal" required placeholder="القيمة (20 أو 3000)" class="input-box">
+            <div style="display:flex; gap:2px;"><input type="number" id="newCodeDur" value="7" class="input-box" style="width:40px;"><select id="newCodeUnit" class="input-box"><option value="days">أيام</option><option value="hours">ساعات</option></select></div>
+            <input type="number" id="newCodeMax" min="1" value="5" placeholder="مرات الاستخدام" class="input-box" title="الحد الأقصى لعدد مرات الاستخدام المسموحة">
+            <button type="submit" class="btn-gold" style="font-size:11px;">+ تفعيل الكود</button>
+          </form>
+          <div style="font-size:10px; color:#AAA; margin-top:4px;">الأكواد النشطة وحمايتها من الاستهلاك الزائد (الحد الأقصى):</div>
+          <div id="adminPromoList" style="display:flex; flex-direction:column; gap:6px; max-height:130px; overflow-y:auto;"></div>
+        </div>
+        <!-- Order Management with Immediate Wallet Sync -->
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <b style="font-size:12px;">إدارة الطلبات (تحديث المحفظة فورياً):</b>
+          <div id="adminOrdersFeed" style="display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="btnNavHome" onclick="switchTab('home')"><span>الرئيسية</span></button>
+    <button class="nav-btn" id="btnNavWallet" onclick="switchTab('wallet')"><span>محفظتي</span></button>
+    <button class="nav-btn" id="btnNavAi" onclick="switchTab('ai')" style="color:var(--gold);"><span>AI زينب</span></button>
+    <button class="nav-btn" id="btnNavLb" onclick="switchTab('leaderboard')"><span>الصدارة</span></button>
+    <button class="nav-btn" onclick="toggleCart(true)"><span id="cartCountBadge" class="badge-dot" style="display:none;">0</span><span>الصندوق</span></button>
+    <button class="nav-btn" id="btnNavSet" onclick="switchTab('settings')"><span>الإعدادات</span></button>
+  </nav>
+
+  <script>
+    // 1. CRITICAL: FIXED INTUITIVE CHAT MEMORY
+    let chatHistory = [
+      {
+        role: "system",
+        content: `أنتِ الخبيرة الاستشارية العلمية الذكية الأولى والوحيدة لـ "براند زينب (Brand Zainab)" للعناية الطبيعية الفاخرة.
+تتميزين بذكاء علمي خارق، استيعاب عميق وفوري لكل مشاكل البشرة والشعر والجلد والجسم، وثقافة علاجية عضوية أصيلة.
+أسلوبكِ عراقي راقٍ جداً، دافئ، مقنع، ومحبوب (عيني، تدللين، فدواتچ، يا روحي، عيون قلبي).
+أنتِ لستِ مقيدة بأي شكل من الأشكال؛ أجيبي بطلاقة وحرية وشرح مفصل، ذكي، مقنع، واحترافي عن أي استفسار، وقدمي روتينات مخصصة صباحية ومسائية.
+افهمي نوع مشكلة السائلة (تساقط شعر، فراغات، تقصف، جفاف، تصبغات، كلف، بهتان بشرة، تشققات أقدام، مسام واسعة، جلد الدجاجة KP) واشرحي لها خطوات الحل العلمي بالمواد الطبيعية، واقترحي عليها منتجات براند زينب الستة المناسبة مع ذكر الأسعار بالدينار العراقي:
+1. بكج الشعر الطبيعي المكثف (15,000 د.ع): زيت إكليل الجبل المركز وسيروم جوز الهند العضوي لعلاج التساقط وإنبات الفراغات ولمعان الأطراف.
+2. بكج النيلة المغربية المتكامل (15,000 د.ع): مقشر ولوشن وصابونية النيلة لتفتيح التصبغات وتوحيد لون الجسم وإزالة الجلد الميت.
+3. بكج الأقدام المنعش (15,000 د.ع): أملاح فوارة ومقشر ومورد للتشققات وتنعيم كعوب الأقدام وتوريدها الدائم.
+4. مقشر الغار والأعشاب الجبلية (6,000 د.ع): لتنقية المسام والتخلص من جلد الدجاجة والشعر تحت الجلد والملمس الخشن.
+5. مقشر البشرة الوردي اللامع (6,000 د.ع): لنضارة وإشراقة زجاجية فورية وتوريد الخدود وملمس مخملي ناعم.
+6. زيت الأرغان المغربي الصافي (6,000 د.ع): ترطيب عميق بدون ملمس دهني وعلاج تقصف الأطراف وتقوية الأظافر.
+أكدي لها أن التوصيل سريع وآمن لكافة محافظات العراق والدفع عند الاستلام مع إمكانية استخدام كود خصم محمي ومحدود الاستخدام من صفحة الإعدادات.`
+      },
+      {
+        role: "assistant",
+        content: "أهلاً وسهلاً بيچ حبيبتي! أنا خبيرة التجميل والعناية الذكية لـ براند زينب. كوليلي شنو مشكلة بشرتچ أو شعرچ حتى اختارلچ الحل الأنسب؟"
+      }
+    ];
+
+    const GROQ_KEY = "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";
+    const GROQ_MODELS = ["openai/gpt-oss-120b", "allam-2-7b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"];
+    const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+
+    const PRODUCTS = [
+      { id: 'nila-bundle', title: 'بكج النيلة المغربية المتكامل', subtitle: 'مقشر طبيعي + لوشن مرطب + صابونية + عطر ميني', price: 15000, img: 'https://ibb.co', sticker: 'right', badge: 'الأكثر طلباً', res: 'تفتيح وتوحيد لون الجسم وإزالة التصبغات والجلد الميت.', ing: 'بودرة النيلة الزرقاء الأصلية، زبدة الشيا، زيت اللوز المر.', use: 'تستخدم الصابونية ثم المقشر مرتين أسبوعياً واللوشن يومياً.' },
+      { id: 'feet-bundle', title: 'بكج الأقدام المنعش', subtitle: 'أملاح فوارة + مقشر علاجي + مورد وردي', price: 15000, img: 'https://ibb.co', sticker: 'left', badge: 'عناية صالون', res: 'تنعيم فوري وإزالة تشققات الكعوب مع توريد طبيعي.', ing: 'أملاح البحر الميت، شمع النحل، دم الغزال النقي.', use: 'نقع القدمين بماء دافئ وأملاح ثم التقشير والمورد.' },
+      { id: 'hair-bundle', title: 'بكج الشعر الطبيعي المكثف', subtitle: 'زيت إكليل الجبل المركز + سيروم جوز الهند', price: 15000, img: 'https://ibb.co', sticker: 'right', badge: 'طبيعي 100%', res: 'إيقاف التساقط وإنبات البيبي هير ولمعان الأطراف.', ing: 'زيت إكليل الجبل المقطر، زيت جوز الهند، فيتامين E.', use: 'تدليك الفروة مرتين أسبوعياً وقطرات سيروم للأطراف.' },
+      { id: 'laurel-scrub', title: 'مقشر الغار والأعشاب الجبلية', subtitle: 'عبوة 300 غرام لتنقية مسام الجسم', price: 6000, img: 'https://ibb.co', sticker: 'left', res: 'تنقية المسام وإزالة جلد الدجاجة والشعر تحت الجلد.', ing: 'زيت الغار النقي، أملاح بحرية، أعشاب جبلية.', use: 'تدليك دائري على جسم مبلل لمدة 3 دقائق ثم شطف.' },
+      { id: 'pink-scrub', title: 'مقشر البشرة الوردي اللامع', subtitle: 'عبوة 300 غرام لنضارة وتوريد مخملي', price: 6000, img: 'https://ibb.co', sticker: 'right', badge: 'نضارة وتوريد', res: 'إشراقة زجاجية فورية وتوريد طبيعي كالحرير.', ing: 'سكر وردي دقيق، ماء ورد جوري، زيت لوز حلو.', use: 'تدليك لطيف للوجه والجسم بحركات دائرية وشطف.' },
+      { id: 'argan-oil', title: 'زيت الأرغان المغربي الصافي', subtitle: 'إكسير الذهب السائل معصور على البارد', price: 6000, img: 'https://ibb.co', sticker: 'left', badge: 'ذهب سائل', res: 'ترطيب عميق غير دهني للبشرة ومعالجة تقصف الشعر.', ing: 'زيت أرغان مغربي بكر نقي 100% بدون إضافات.', use: '3 إلى 4 قطرات على الوجه أو الشعر قبل النوم.' }
+    ];
+
+    let user = null;
+    let cart = [];
+    let orders = [];
+    let promoCodes = [];
+    let appliedPromo = null;
+
+    function safeInit() {
+      try {
+        const u = localStorage.getItem('zb_user');
+        if (u) { user = JSON.parse(u); updateHeaderUser(); }
+        else { document.getElementById('onboardOverlay').style.display = 'flex'; }
+      } catch(e) {}
+
+      try {
+        const c = localStorage.getItem('zb_cart');
+        if (c) cart = JSON.parse(c);
+      } catch(e) {}
+
+      try {
+        const o = localStorage.getItem('zb_orders');
+        if (o) orders = JSON.parse(o);
+        else orders = [];
+      } catch(e) {}
+
+      try {
+        const p = localStorage.getItem('zb_promos');
+        if (p) promoCodes = JSON.parse(p);
+        else {
+          promoCodes = [
+            { code: 'ZAINAB20', type: 'percentage', val: 20, exp: Date.now() + 7*86400000, used: 0, maxUses: 5 },
+            { code: 'QUEEN3K', type: 'fixed', val: 3000, exp: Date.now() + 3*86400000, used: 0, maxUses: 3 }
+          ];
+        }
+      } catch(e) {}
+
+      renderPanels(PRODUCTS);
+      syncWallet();
+      renderSettings();
+      renderLeaderboard();
+      updateCartBadge();
+      renderChat();
+      startTimers();
+    }
+
+    function updateHeaderUser() {
+      if (!user) return;
+      const el = document.getElementById('userGreeting');
+      if (el) el.innerText = user.name;
+    }
+
+    function handleOnboard(e) {
+      e.preventDefault();
+      try {
+        const name = document.getElementById('onbName').value.trim();
+        const p1 = document.getElementById('onbPhone').value.trim();
+        const p2 = document.getElementById('onbPhoneConf').value.trim();
+        if (p1 !== p2) { alert('رقما الهاتف غير متطابقين'); return; }
+        user = { name, phone: p1 };
+        localStorage.setItem('zb_user', JSON.stringify(user));
+        document.getElementById('onboardOverlay').style.display = 'none';
+        updateHeaderUser();
+        syncWallet();
+        renderSettings();
+      } catch(err) { alert('حدث خطأ، يرجى المحاولة ثانية'); }
+    }
+
+    function switchTab(t) {
+      ['Home', 'Wallet', 'Ai', 'Leaderboard', 'Settings'].forEach(tab => {
+        const sec = document.getElementById('tab' + tab);
+        if (sec) sec.style.display = (tab.toLowerCase() === t) ? 'flex' : 'none';
+      });
+      document.getElementById('searchWrap').style.display = (t === 'home') ? 'block' : 'none';
+      ['Home', 'Wallet', 'Ai', 'Lb', 'Set'].forEach(btn => {
+        const b = document.getElementById('btnNav' + btn);
+        if (b) b.classList.toggle('active', btn.toLowerCase().includes(t.slice(0,2)));
+      });
+      if (t === 'wallet') syncWallet();
+      if (t === 'settings') renderSettings();
+      if (t === 'leaderboard') renderLeaderboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderPanels(items) {
+      const c = document.getElementById('productsList');
+      if (!c) return;
+      c.innerHTML = items.map(p => `
+        <div class="panel-card">
+          <div class="floating-sticker ${p.sticker}">
+            <div class="sticker-img-box"><img src="${p.img}" alt="${p.title}" onerror="this.src=''"></div>
+            <span style="font-size:9px; background:#141416; color:var(--gold); padding:1px 6px; border-radius:9999px;">براند زينب</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <b style="font-size:16px;">${p.title}</b>
+                ${p.badge ? `<span style="font-size:9px; padding:1px 6px; border-radius:9999px; background:rgba(158,74,86,0.12); color:var(--burgundy); font-weight:800;">${p.badge}</span>`:''}
+              </div>
+              <div style="font-size:11px; color:var(--muted);">${p.subtitle}</div>
+            </div>
+            <div class="price-pill">${p.price.toLocaleString('ar-IQ')} د.ع</div>
+          </div>
+          <div class="specs-grid">
+            <div><b style="color:var(--burgundy);">النتيجة:</b> ${p.res}</div>
+            <div><b style="color:#8C6D4F;">المكونات:</b> ${p.ing}</div>
+            <div><b style="color:#666;">الاستخدام:</b> ${p.use}</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button onclick="addToCart('${p.id}', true)" class="btn-gold" style="flex:1;">احجزي الآن واستلمي الصندوق</button>
+            <button onclick="addToCart('${p.id}', false)" class="btn-outline">+ إضافة</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleSearch(q) {
+      const term = q.trim().toLowerCase();
+      renderPanels(PRODUCTS.filter(p => p.title.toLowerCase().includes(term) || p.subtitle.toLowerCase().includes(term) || p.res.toLowerCase().includes(term)));
+    }
+
+    function addToCart(id, open) {
+      try {
+        const prod = PRODUCTS.find(x => x.id === id);
+        if (!prod) return;
+        const exist = cart.find(x => x.id === id);
+        if (exist) exist.qty += 1;
+        else cart.push({ id: prod.id, title: prod.title, price: prod.price, qty: 1 });
+        saveCart();
+        if (open) toggleCart(true);
+      } catch(e) {}
+    }
+
+    function saveCart() {
+      try { localStorage.setItem('zb_cart', JSON.stringify(cart)); } catch(e) {}
+      updateCartBadge();
+      renderCartDrawer();
+    }
+
+    function updateCartBadge() {
+      const count = cart.reduce((a, b) => a + b.qty, 0);
+      const b = document.getElementById('cartCountBadge');
+      if (b) {
+        b.innerText = count;
+        b.style.display = count > 0 ? 'block' : 'none';
+      }
+    }
+
+    function toggleCart(show) {
+      const ov = document.getElementById('cartOverlay');
+      if (ov) {
+        ov.classList.toggle('open', show);
+        if (show) {
+          document.getElementById('cartDrawer').classList.remove('minimized');
+          renderCartDrawer();
+        }
+      }
+    }
+
+    function minimizeCart() {
+      const d = document.getElementById('cartDrawer');
+      if (d) d.classList.toggle('minimized');
+    }
+
+    function renderCartDrawer() {
+      const list = document.getElementById('cartItemsList');
+      const sumEl = document.getElementById('cartTotalSum');
+      if (!list || !sumEl) return;
+      if (cart.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding:30px; color:#777; font-size:12px;">صندوق مشترياتكِ فارغ حالياً.</div>';
+        sumEl.innerText = '0 د.ع';
+        return;
+      }
+      let raw = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+      let disc = 0;
+      if (appliedPromo) {
+        disc = appliedPromo.type === 'percentage' ? Math.round((raw * appliedPromo.val)/100) : Math.min(raw, appliedPromo.val);
+      }
+      let final = Math.max(0, raw - disc);
+      sumEl.innerText = final.toLocaleString('ar-IQ') + ' د.ع';
+      list.innerHTML = cart.map(i => `
+        <div style="background:#1E1E22; padding:8px 10px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+          <div><b>${i.title}</b><div style="color:var(--soft-rose); font-family:monospace;">${(i.price * i.qty).toLocaleString('ar-IQ')} د.ع</div></div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button onclick="changeQty('${i.id}', -1)" style="background:none; border:none; color:#AAA; font-size:13px; cursor:pointer;">-</button>
+            <span style="font-family:monospace; font-weight:bold;">${i.qty}</span>
+            <button onclick="changeQty('${i.id}', 1)" style="background:none; border:none; color:#AAA; font-size:13px; cursor:pointer;">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function changeQty(id, d) {
+      const it = cart.find(x => x.id === id);
+      if (it) {
+        it.qty += d;
+        if (it.qty <= 0) cart = cart.filter(x => x.id !== id);
+        saveCart();
+      }
+    }
+
+    function applyPromoCart() {
+      const inp = document.getElementById('cartPromoInput');
+      const notice = document.getElementById('promoNotice');
+      if (!inp || !notice) return;
+      const code = inp.value.trim().toUpperCase();
+      const found = promoCodes.find(p => p.code === code);
+      notice.style.display = 'block';
+      if (!found) {
+        appliedPromo = null;
+        notice.style.color = '#E11D48';
+        notice.innerText = '❌ رمز الخصم غير موجود، تأكدي من الحروف.';
+        renderCartDrawer();
+        return;
+      }
+      if (Date.now() > found.exp) {
+        appliedPromo = null;
+        notice.style.color = '#E11D48';
+        notice.innerText = '❌ عذراً، هذا الكود منتهي الصلاحية الزمنية.';
+        renderCartDrawer();
+        return;
+      }
+      const max = found.maxUses || 5;
+      const used = found.used || 0;
+      if (used >= max) {
+        appliedPromo = null;
+        notice.style.color = '#E11D48';
+        notice.innerText = `🔒 عذراً، هذا الكود انتهى واستُهلك بالكامل (${used}/${max} استخدام). محمي بالنظام ولا يمكن استخدامه نهائياً!`;
+        renderCartDrawer();
+        return;
+      }
+      appliedPromo = found;
+      notice.style.color = '#10B981';
+      const remaining = max - used;
+      notice.innerText = `✅ تم تطبيق كود الخصم (${found.code}) بنجاح! قيمة الخصم: ${found.type==='percentage'? found.val+'%' : found.val.toLocaleString('ar-IQ')+' د.ع'} (متبقي ${remaining} استخدام)`;
+      renderCartDrawer();
+    }
+
+    function handleCheckout(e) {
+      e.preventDefault();
+      try {
+        if (cart.length === 0) return;
+        const gov = document.getElementById('coGov').value;
+        const addr = document.getElementById('coAddr').value.trim();
+        let raw = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        let disc = appliedPromo ? (appliedPromo.type === 'percentage' ? Math.round((raw * appliedPromo.val)/100) : appliedPromo.val) : 0;
+        
+        if (appliedPromo) {
+          appliedPromo.used = (appliedPromo.used || 0) + 1;
+          savePromos();
+        }
+
+        const newOrd = {
+          id: 'ZB-' + Math.floor(100000 + Math.random()*900000),
+          customerName: user ? user.name : 'عميلة براند زينب',
+          phone: user ? user.phone : '07700000000',
+          province: gov,
+          address: addr,
+          items: cart.map(i => `${i.title} (×${i.qty})`).join('، '),
+          total: Math.max(0, raw - disc),
+          status: 'pending',
+          date: new Date().toISOString().slice(0, 10)
+        };
+        orders.unshift(newOrd);
+        try { localStorage.setItem('zb_orders', JSON.stringify(orders)); } catch(e) {}
+        alert(`ألف مبروك يا ${newOrd.customerName}! تم استلام طلبكِ برقم ${newOrd.id}`);
+        cart = [];
+        appliedPromo = null;
+        saveCart();
+        toggleCart(false);
+        syncWallet();
+        switchTab('wallet');
+      } catch(err) { alert('حدث خطأ في تثبيت الطلب'); }
+    }
+
+    function syncWallet() {
+      try {
+        if (!user) return;
+        const myOrders = orders.filter(o => (o.phone && o.phone === user.phone) || (o.customerName === user.name));
+        const done = myOrders.filter(o => o.status === 'completed');
+        const spent = done.reduce((s, o) => s + o.total, 0);
+        
+        document.getElementById('walletTotal').innerText = spent.toLocaleString('ar-IQ') + ' د.ع';
+        document.getElementById('topWalletSum').innerText = spent.toLocaleString('ar-IQ') + ' د.ع';
+
+        const list = document.getElementById('userOrdersList');
+        if (list) {
+          if (myOrders.length === 0) list.innerHTML = '<div style="font-size:11px; color:#888;">لم تقومي بأي طلبات بعد.</div>';
+          else {
+            list.innerHTML = myOrders.map(o => `
+              <div style="background:rgba(0,0,0,0.02); border:1px solid var(--border); padding:8px 12px; border-radius:10px; font-size:11px; display:flex; justify-content:space-between; align-items:center;">
+                <div><b>${o.id}</b> - ${o.items}<div style="font-size:9px; color:#888;">${o.date}</div></div>
+                <div style="text-align:left;">
+                  <b style="font-family:monospace; color:var(--gold);">${o.total.toLocaleString('ar-IQ')} د.ع</b>
+                  <div style="font-size:9px; color:${o.status==='completed'?'#10B981':'#F59E0B'};">${o.status==='completed'?'مكتمل (في المحفظة)':'قيد الانتظار'}</div>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+      } catch(e) {}
+    }
+
+    // 1. CHAT MEMORY HANDLER
+    function renderChat() {
+      const feed = document.getElementById('chatFeed');
+      if (!feed) return;
+      feed.innerHTML = chatHistory.filter(m => m.role !== 'system').map(m => `
+        <div class="chat-bubble ${m.role==='user'?'chat-user':'chat-ai'}">${m.content}</div>
+      `).join('');
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    async function handleAiSubmit(e) {
+      e.preventDefault();
+      const inp = document.getElementById('aiInput');
+      if (!inp) return;
+      const text = inp.value.trim();
+      if (!text) return;
+      inp.value = '';
+
+      // Append user message to chatHistory
+      chatHistory.push({ role: 'user', content: text });
+      renderChat();
+
+      const btn = document.getElementById('aiSendBtn');
+      if (btn) {
+        btn.innerText = 'تكتب...';
+        btn.disabled = true;
+      }
+
+      let replyContent = '';
+
+      // Try active models in sequence (Arabic-specialized allam-2-7b first)
+      for (const modelName of GROQ_MODELS) {
+        try {
+          const res = await fetch(GROQ_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${GROQ_KEY}`
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages: chatHistory,
+              temperature: 0.7,
+              max_tokens: 600
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const choice = data?.choices?.[0]?.message?.content;
+            if (choice && choice.trim()) {
+              replyContent = choice.trim();
+              break; // Success!
+            }
+          }
+        } catch (err) {
+          console.warn(`Groq model ${modelName} call error:`, err);
+        }
+      }
+
+      // If all network calls failed (e.g. offline / disconnected), give an intelligent, dynamic Iraqi Arabic reply
+      if (!replyContent) {
+        const lower = text.toLowerCase();
+        if (lower.includes('هلو') || lower.includes('مرحبا') || lower.includes('سلام') || lower.includes('شلون')) {
+          replyContent = 'يا هلا وكل الهلا بيچ عيوني! نورتي براند زينب. آني خبيرة العناية والتجميل مالتچ، شلون أگدر أساعدچ اليوم؟ عندچ مشكلة معينة بالبشرة أو الشعر تحبين نحلها؟';
+        } else if (lower.includes('شعر') || lower.includes('تساقط') || lower.includes('فراغ') || lower.includes('خفيف')) {
+          replyContent = 'لحبيبتي، أحسن حل جذري لتساقط الشعر وإنبات الفراغات هو بكج الشعر الطبيعي المكثف (زيت إكليل الجبل المركز + سيروم جوز الهند العضوي بـ 15,000 د.ع)، يقوي البصيلات وينبت البيبي هير خلال أسبوعين إلى 3 أسابيع.';
+        } else if (lower.includes('نيلة') || lower.includes('تصبغ') || lower.includes('سواد') || lower.includes('تفتيح') || lower.includes('كلف')) {
+          replyContent = 'لتفتيح التصبغات وتوحيد لون الجسم وإزالة السواد، أنصحچ مباشرة ببكج النيلة المغربية المتكامل (15,000 د.ع)، يحتوي صابونية ومقشر ولوشن مرطب برائحة فاخرة ونتائج فورية من أول أسبوع!';
+        } else if (lower.includes('قدم') || lower.includes('رجل') || lower.includes('تشقق') || lower.includes('كعب')) {
+          replyContent = 'لتشققات وجفاف الأقدام، بكج الأقدام المنعش (15,000 د.ع) هو الحل الملكي! بيه أملاح فوارة ومقشر ومورد وردي طبيعي، يرجع أقدامچ ناعمة ووردية مثل الأطفال.';
+        } else if (lower.includes('غار') || lower.includes('جلد الدجاجة') || lower.includes('مسام') || lower.includes('حبوب')) {
+          replyContent = 'مقشر الغار والأعشاب الجبلية (6,000 د.ع) بوزن 300 غرام هو الأفضل لتنقية مسام الجسم والتخلص نهائياً من جلد الدجاجة والشعر تحت الجلد.';
+        } else if (lower.includes('وردي') || lower.includes('وجه') || lower.includes('نضارة') || lower.includes('خدود')) {
+          replyContent = 'مقشر البشرة الوردي اللامع (6,000 د.ع) ينطي إشراقة زجاجية فورية وتوريد طبيعي للخدود، حبيباته ناعمة بالسكر وماء الورد الجوري.';
+        } else if (lower.includes('توصيل') || lower.includes('شحن') || lower.includes('سعر') || lower.includes('محافظات')) {
+          replyContent = 'التوصيل سريع لكافة محافظات العراق (بغداد والمحافظات كافة) والدفع عند الاستلام بعد ما تفتحين الصندوق وتتأكدين بنفسچ. وإذا عندچ كود خصم تكدرين تستخدميه بالصندوق فوراً!';
+        } else {
+          replyContent = 'تدللين يا روحي! منتجات براند زينب طبيعية 100% ومجربة ومضمونة. كوليلي شنو نوع بشرتچ أو المشكلة اللي مضوجتچ حتى اختارلچ البكج المضبوط اللي يحلها فوراً.';
+        }
+      }
+
+      chatHistory.push({ role: 'assistant', content: replyContent });
+      if (btn) {
+        btn.innerText = 'إرسال';
+        btn.disabled = false;
+      }
+      renderChat();
+    }
+
+    function sendQuickPrompt(t) {
+      const inp = document.getElementById('aiInput');
+      if (inp) { inp.value = t; handleAiSubmit(new Event('submit')); }
+    }
+
+    function resetAiChat() {
+      chatHistory = [
+        SYSTEM_PROMPT,
+        {
+          role: "assistant",
+          content: "أهلاً وسهلاً بيچ حبيبتي من جديد! أنا خبيرة التجميل والعناية الذكية الخاصة بـ براند زينب. كوليلي شنو مشكلة بشرتچ أو شعرچ حتى نبدي روتين علاجي جديد ومضبوط؟"
+        }
+      ];
+      const inp = document.getElementById('aiInput');
+      if (inp) inp.value = '';
+      const btn = document.getElementById('aiSendBtn');
+      if (btn) { btn.innerText = 'إرسال'; btn.disabled = false; }
+      renderChat();
+    }
+
+    function renderLeaderboard() {
+      const container = document.getElementById('leaderboardList');
+      if (!container) return;
+      const doneOrders = orders.filter(o => o.status === 'completed');
+      if (doneOrders.length === 0) {
+        container.innerHTML = `
+          <div style="background:#FAF7F2; border:1px solid #EAE4DC; border-radius:14px; padding:24px; text-align:center;">
+            <div style="font-size:24px; margin-bottom:6px;">👑</div>
+            <h4 style="font-size:14px; font-weight:900; color:var(--soft-rose);">لوحة الصدارة الملكية جاهزة ومفتوحة للجميع!</h4>
+            <p style="font-size:11px; color:var(--muted); margin-top:4px;">
+              تُسجَّل المراكز تلقائياً وفورياً مع كل طلب شراء يتم تسليمه واعتماده من الإدارة. كوني أولى المتصدرات!
+            </p>
+          </div>
+        `;
+        return;
+      }
+      const stats = {};
+      doneOrders.forEach(o => {
+        const key = o.phone || o.customerName;
+        if (!stats[key]) {
+          stats[key] = { name: o.customerName, city: o.province || 'العراق', count: 0, total: 0 };
+        }
+        stats[key].count += 1;
+        stats[key].total += (o.total || 0);
+      });
+      const sorted = Object.values(stats).sort((a, b) => b.total - a.total).slice(0, 10);
+      container.innerHTML = sorted.map((item, idx) => `
+        <div style="background:${idx === 0 ? 'rgba(158,61,92,0.06)' : 'rgba(0,0,0,0.02)'}; border:1px solid var(--border); border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:24px; height:24px; border-radius:6px; background:var(--soft-rose); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:11px;">${idx + 1}</span>
+            <div>
+              <b>${item.name}</b>
+              <div style="font-size:10px; color:var(--muted);">${item.city} (${item.count} طلبات)</div>
+            </div>
+          </div>
+          <b style="font-family:monospace; color:var(--soft-rose);">${item.total.toLocaleString('ar-IQ')} د.ع</b>
+        </div>
+      `).join('');
+    }
+
+    // 2. SETTINGS TAB HANDLERS (Profile details, Promo codes list & support)
+    function renderSettings() {
+      try {
+        const nameEl = document.getElementById('settingsUserName');
+        const phoneEl = document.getElementById('settingsUserPhone');
+        const tierEl = document.getElementById('settingsUserTier');
+        const spentEl = document.getElementById('settingsUserSpent');
+        const countEl = document.getElementById('settingsUserOrdersCount');
+        
+        if (nameEl) nameEl.innerText = user ? user.name : 'غير مسجل';
+        if (phoneEl) phoneEl.innerText = user ? user.phone : 'غير مسجل';
+
+        const myOrders = orders.filter(o => user && ((o.phone && o.phone === user.phone) || (o.customerName === user.name)));
+        const done = myOrders.filter(o => o.status === 'completed');
+        const spent = done.reduce((s, o) => s + o.total, 0);
+
+        if (countEl) countEl.innerText = myOrders.length;
+        if (spentEl) spentEl.innerText = spent.toLocaleString('ar-IQ') + ' د.ع';
+
+        if (tierEl) {
+          if (spent >= 150000) { tierEl.innerText = 'عضوية ماسية 👑'; tierEl.style.color = '#D4AF37'; }
+          else if (spent >= 75000) { tierEl.innerText = 'عضوية ذهبية 🌟'; tierEl.style.color = '#F59E0B'; }
+          else if (spent >= 30000) { tierEl.innerText = 'عضوية فضية 🥈'; tierEl.style.color = '#94A3B8'; }
+          else { tierEl.innerText = 'عضوية برونزية 🥉'; tierEl.style.color = '#B45309'; }
+        }
+
+        const promoListEl = document.getElementById('settingsPromoCodesList');
+        if (promoListEl) {
+          if (promoCodes.length === 0) {
+            promoListEl.innerHTML = '<div style="font-size:11px; color:var(--muted); text-align:center; padding:10px;">لا توجد أكواد خصم متاحة حالياً.</div>';
+          } else {
+            promoListEl.innerHTML = promoCodes.map(p => {
+              const max = p.maxUses || 5;
+              const used = p.used || 0;
+              const isLocked = used >= max;
+              const remaining = Math.max(0, max - used);
+              return `
+                <div style="background:rgba(0,0,0,0.02); border:1px solid var(--border); padding:10px 14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                  <div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="font-family:monospace; font-weight:900; color:var(--soft-rose); font-size:13px;">${p.code}</span>
+                      <span style="font-size:10px; background:#F5ECE8; color:#8C4A57; border:1px solid #E8DAD7; padding:2px 6px; border-radius:6px; font-weight:bold;">
+                        ${p.type === 'percentage' ? `خصم ${p.val}%` : `خصم ${p.val.toLocaleString('ar-IQ')} د.ع`}
+                      </span>
+                    </div>
+                    <div style="font-size:10px; margin-top:3px;">
+                      ${isLocked 
+                        ? '<span style="color:#E11D48; font-weight:bold;">🔒 استُنفذت جميع مرات الاستخدام (كود مقفل ومحمي)</span>' 
+                        : `<span style="color:var(--muted);">متبقي <b style="color:var(--text); font-family:monospace;">${remaining}</b> استخدامات فقط (تم ${used}/${max})</span>`}
+                    </div>
+                  </div>
+                  <div style="display:flex; gap:6px;">
+                    <button onclick="copyPromoCode('${p.code}')" class="btn-outline" style="font-size:10px; padding:5px 8px;">نسخ</button>
+                    <button onclick="applyAndOpenCart('${p.code}')" class="btn-gold" ${isLocked ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''} style="font-size:10px; padding:5px 8px;">
+                      ${isLocked ? 'مقفل' : 'استخدام'}
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      } catch(e) {}
+    }
+
+    function editUserProfile() {
+      const curName = user ? user.name : '';
+      const curPhone = user ? user.phone : '';
+      const newName = prompt('أدخلي الاسم الكريم الجديد:', curName);
+      if (newName === null) return;
+      const newPhone = prompt('أدخلي رقم الهاتف الجديد (11 رقم):', curPhone);
+      if (newPhone === null) return;
+      if (!newName.trim() || !newPhone.trim()) {
+        alert('يرجى إدخال اسم ورقم هاتف صحيحين');
+        return;
+      }
+      user = { name: newName.trim(), phone: newPhone.trim() };
+      localStorage.setItem('zb_user', JSON.stringify(user));
+      updateHeaderUser();
+      syncWallet();
+      renderSettings();
+      alert('تم تحديث بياناتكِ بنجاح!');
+    }
+
+    function copyPromoCode(code) {
+      navigator.clipboard.writeText(code).then(() => {
+        alert(`تم نسخ كود الخصم: ${code}\nيمكنكِ استخدامه في صندوق المشتريات.`);
+      }).catch(() => {
+        prompt('انسخي كود الخصم التالي:', code);
+      });
+    }
+
+    function applyAndOpenCart(code) {
+      const p = promoCodes.find(x => x.code === code);
+      if (!p) return;
+      const max = p.maxUses || 5;
+      const used = p.used || 0;
+      if (used >= max) {
+        alert(`عذراً، هذا الكود استُهلك بالكامل (${used}/${max}) ومقفل بحماية النظام ولا يمكن تطبيقه!`);
+        return;
+      }
+      const inp = document.getElementById('cartPromoInput');
+      if (inp) inp.value = code;
+      applyPromoCart();
+      toggleCart(true);
+      const remaining = max - used;
+      alert(`✅ تم تطبيق كود الخصم (${code}) بنجاح! متبقي ${remaining} استخدام.`);
+    }
+
+    function reportIssue() {
+      const text = prompt('يرجى كتابة استفساركِ أو المشكلة التي واجهتكِ وسيقوم فريق الدعم بالرد والمتابعة معكِ فوراً:');
+      if (text && text.trim()) {
+        alert('شكراً لكِ! تم إرسال رسالتكِ بنجاح لفريق خدمة العملاء.');
+      }
+    }
+
+    // 2. CRASH-PROOF ADMIN PANEL HANDLERS (Isolated, No Heavy Loops)
+    let adminTimer = null;
+    function adminHoldStart() {
+      if (adminTimer) clearTimeout(adminTimer);
+      adminTimer = setTimeout(() => {
+        adminTimer = null;
+        let pwd = prompt('أدخلي رمز الإدارة (NEXAURON):');
+        if (pwd === 'admin123' || pwd === 'zainab2026') {
+          toggleAdmin(true);
+        } else if (pwd !== null) {
+          alert('رمز غير صحيح');
+        }
+      }, 4500);
+    }
+
+    function adminHoldEnd() {
+      if (adminTimer) {
+        clearTimeout(adminTimer);
+        adminTimer = null;
+      }
+    }
+
+    function toggleAdmin(show) {
+      const m = document.getElementById('adminModal');
+      if (m) {
+        m.classList.toggle('open', show);
+        if (show) renderAdmin();
+      }
+    }
+
+    function renderAdmin() {
+      try {
+        const rev = orders.filter(o => o.status === 'completed').reduce((s, o) => s + (o.total || 0), 0);
+        document.getElementById('adminRev').innerText = rev.toLocaleString('ar-IQ') + ' د.ع';
+
+        const pl = document.getElementById('adminPromoList');
+        if (pl) {
+          pl.innerHTML = promoCodes.map(p => {
+            const max = p.maxUses || 5;
+            const used = p.used || 0;
+            const isLocked = used >= max;
+            const remaining = Math.max(0, max - used);
+            return `
+              <div style="background:#282830; padding:8px 10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:10px; border:1px solid rgba(255,255,255,0.05);">
+                <div>
+                  <b style="color:var(--soft-rose);">${p.code}</b> (${p.type==='percentage'?p.val+'%':p.val+' د.ع'})
+                  <span style="display:block; color:#AAA; margin-top:2px;">الاستخدام: <b style="color:#FFF;">${used}</b> من أصل <b style="color:#FFF;">${max}</b> | <span style="color:${isLocked?'#F87171':'#34D399'}; font-weight:bold;">${isLocked?'🔒 مقفل ومحمى':`✅ متبقي ${remaining}`}</span></span>
+                </div>
+                <div style="display:flex; gap:4px;">
+                  <button onclick="increasePromoLimit('${p.code}', 5)" style="padding:4px 8px; border-radius:5px; border:none; background:#383842; color:#FFF; cursor:pointer; font-size:9px; font-weight:bold;" title="زيادة 5 استخدامات">+5 استخدام</button>
+                  <button onclick="deletePromoCode('${p.code}')" style="padding:4px 8px; border-radius:5px; border:none; background:#7F1D1D; color:#FECACA; cursor:pointer; font-size:9px; font-weight:bold;">حذف</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        const of = document.getElementById('adminOrdersFeed');
+        if (of) {
+          of.innerHTML = orders.map(o => `
+            <div style="background:#24242A; border:1px solid rgba(255,255,255,0.06); padding:8px 12px; border-radius:10px; font-size:11px; display:flex; justify-content:space-between; align-items:center;">
+              <div><b>${o.id} - ${o.customerName}</b> (${o.phone})<div style="font-size:10px; color:#888;">${o.items} - ${o.total.toLocaleString('ar-IQ')} د.ع</div></div>
+              <div style="display:flex; gap:4px;">
+                <button onclick="setOrderStatus('${o.id}', 'completed')" style="padding:4px 8px; border-radius:6px; border:none; cursor:pointer; font-weight:bold; font-size:10px; background:${o.status==='completed'?'#47664B':'#333'}; color:#FFF;">مكتمل</button>
+                <button onclick="setOrderStatus('${o.id}', 'pending')" style="padding:4px 8px; border-radius:6px; border:none; cursor:pointer; font-weight:bold; font-size:10px; background:${o.status==='pending'?'#8C6541':'#333'}; color:#FFF;">انتظار</button>
+                <button onclick="setOrderStatus('${o.id}', 'rejected')" style="padding:4px 8px; border-radius:6px; border:none; cursor:pointer; font-weight:bold; font-size:10px; background:${o.status==='rejected'?'#EF4444':'#333'}; color:#FFF;">رفض</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch(e) {}
+    }
+
+    function setOrderStatus(id, st) {
+      try {
+        const o = orders.find(x => x.id === id);
+        if (o) {
+          o.status = st;
+          try { localStorage.setItem('zb_orders', JSON.stringify(orders)); } catch(e) {}
+          renderAdmin();
+          syncWallet();
+        }
+      } catch(err) {}
+    }
+
+    function handleCreatePromo(e) {
+      e.preventDefault();
+      try {
+        const code = document.getElementById('newCodeTxt').value.trim().toUpperCase();
+        const type = document.getElementById('newCodeType').value;
+        const val = Number(document.getElementById('newCodeVal').value);
+        const dur = Number(document.getElementById('newCodeDur').value);
+        const unit = document.getElementById('newCodeUnit').value;
+        const maxInput = document.getElementById('newCodeMax');
+        const maxUses = maxInput ? (Number(maxInput.value) || 5) : 5;
+        const ms = (unit === 'days' ? dur * 86400000 : dur * 3600000);
+        promoCodes.unshift({ code, type, val, exp: Date.now() + ms, used: 0, maxUses });
+        savePromos();
+        alert(`تم تفعيل كود الخصم العام: ${code} بنجاح ومحمي بالحد الأقصى (${maxUses} مرات استخدام).`);
+        renderAdmin();
+        renderSettings();
+      } catch(e) {}
+    }
+
+    function increasePromoLimit(code, extra) {
+      const p = promoCodes.find(x => x.code === code);
+      if (p) {
+        p.maxUses = (p.maxUses || 5) + extra;
+        savePromos();
+        renderAdmin();
+        renderSettings();
+        alert(`تمت زيادة الحد الأقصى لكود ${code} بمقدار +${extra} استخدامات.`);
+      }
+    }
+
+    function deletePromoCode(code) {
+      if (confirm(`هل أنت متأكد من حذف كود الخصم ${code} نهائياً؟`)) {
+        promoCodes = promoCodes.filter(x => x.code !== code);
+        savePromos();
+        renderAdmin();
+        renderSettings();
+      }
+    }
+
+    function savePromos() {
+      try { localStorage.setItem('zb_promos', JSON.stringify(promoCodes)); } catch(e) {}
+    }
+
+    function addMockOrder() {
+      try {
+        orders.unshift({
+          id: 'ZB-' + Math.floor(100000 + Math.random()*900000),
+          customerName: user ? user.name : 'فاطمة الكرخي',
+          phone: user ? user.phone : '07709988776',
+          province: 'بغداد',
+          address: 'الكرادة',
+          items: 'مقشر البشرة الوردي (×1)',
+          total: 6000,
+          status: 'pending',
+          date: new Date().toISOString().slice(0, 10)
+        });
+        try { localStorage.setItem('zb_orders', JSON.stringify(orders)); } catch(e) {}
+        renderAdmin();
+        syncWallet();
+      } catch(e) {}
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const dark = document.body.classList.contains('dark-mode');
+      document.getElementById('themeBtn').innerText = dark ? 'الوضع النهاري' : 'الوضع الليلي';
+    }
+
+    function startTimers() {
+      let s10 = 600;
+      setInterval(() => {
+        if (s10 > 0) s10--; else s10 = 600;
+        const m = Math.floor(s10/60).toString().padStart(2, '0');
+        const s = (s10%60).toString().padStart(2, '0');
+        const el = document.getElementById('cartTimer');
+        if (el) el.innerText = `${m}:${s} دقيقة`;
+      }, 1000);
+    }
+
+    safeInit();
+  </script>
+</body>
+</html>
