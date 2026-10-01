@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>براند زينب (Brand Zainab) - العناية الفاخرة</title>
+  <link rel="icon" type="image/jpeg" href="https://i.ibb.co/6JVM8n4K/Screenshot-20261001-080136-Instagram.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FBF9F5; --card: #FFFFFF; --text: #2D2727; --muted: #7E7472;
+      --soft-rose: #9E3D5C; --burgundy: #7C2B42; --gold: #9E3D5C;
+      --border: #EAE4DC; --drawer: #24211F; --nav: rgba(251, 249, 245, 0.96);
+    }
+    body.dark-mode {
+      --bg: #1E1B19; --card: #282421; --text: #EDE6DF; --muted: #9E958E;
+      --soft-rose: #F49EB7; --burgundy: #FCA5BD; --gold: #F49EB7;
+      --border: rgba(255, 255, 255, 0.08); --nav: rgba(30, 27, 25, 0.96);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); font-family: 'Tajawal', system-ui, sans-serif; min-height: 100vh; padding-bottom: 70px; }
+    .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    
+    header { position: sticky; top: 0; z-index: 40; background: var(--nav); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 10px 16px; }
+    .header-box { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; }
+    .brand-tag { display: flex; align-items: center; gap: 8px; font-weight: 900; }
+    .brand-logo-img { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid var(--soft-rose); }
+    .search-input { width: 100%; padding: 8px 36px 8px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 12px; font-family: inherit; }
+    
+    .app-box { max-width: 760px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 18px; }
+    .panels-track { position: relative; display: flex; flex-direction: column; gap: 22px; }
+    .panel-card { position: relative; z-index: 2; background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; text-align: right; box-shadow: 0 3px 12px rgba(0,0,0,0.02); }
+    
+    .floating-sticker { position: absolute; top: 50%; transform: translateY(-50%); display: none; }
+    @media(min-width: 960px) {
+      .floating-sticker { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+      .floating-sticker.right { right: -60px; }
+      .floating-sticker.left { left: -60px; }
+    }
+    .sticker-img-box { width: 50px; height: 50px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); padding: 4px; box-shadow: 0 2px 8px rgba(45,39,39,0.05); display: flex; align-items: center; justify-content: center; }
+    .sticker-img-box img { width: 100%; height: 100%; object-fit: contain; }
+    .price-pill { background: #F5EFE9; border: 1px solid #E4DDD4; padding: 4px 12px; border-radius: 10px; font-size: 14px; font-weight: 800; color: #805D3B; font-family: monospace; }
+    body.dark-mode .price-pill { color: #D9A5B0; background: #322D29; border-color: #443E38; }
+    .specs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; background: #F5EFE9; padding: 12px; border-radius: 14px; border: 1px solid var(--border); font-size: 11px; line-height: 1.4; }
+    body.dark-mode .specs-grid { background: rgba(0,0,0,0.15); }
+    
+    .btn-gold { padding: 9px 14px; border-radius: 12px; background: var(--soft-rose); color: #FFFFFF; font-weight: 800; font-size: 12px; border: none; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+    .btn-gold:hover { opacity: 0.9; }
+    .btn-outline { padding: 9px 14px; border-radius: 12px; background: transparent; border: 1px solid var(--border); color: var(--text); font-weight: 700; font-size: 12px; cursor: pointer; font-family: inherit; }
+    .btn-outline:hover { background: #F5EFE9; }
+
+    .cart-overlay { position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; justify-content: flex-end; }
+    .cart-overlay.open { display: flex; }
+    .cart-drawer { background: var(--drawer); color: #EDE7E3; width: 100%; max-width: 380px; height: 100%; display: flex; flex-direction: column; border-left: 1px solid rgba(255,255,255,0.1); transition: transform 0.25s ease; }
+    .cart-drawer.minimized { transform: translateY(calc(100% - 56px)); }
+    .cart-drawer.minimized .cart-hide { display: none !important; }
+
+    .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 12px; line-height: 1.5; white-space: pre-line; }
+    .chat-user { align-self: flex-start; background: var(--soft-rose); color: #FFFFFF; font-weight: 700; border-top-right-radius: 0; }
+    .chat-ai { align-self: flex-end; background: #1C1C20; color: #FFF; border: 1px solid rgba(255,255,255,0.08); border-top-left-radius: 0; }
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: var(--nav); backdrop-filter: blur(12px); border-top: 1px solid var(--border); height: 58px; display: flex; align-items: center; justify-content: space-around; max-width: 760px; margin: 0 auto; }
+    .nav-btn { background: none; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: inherit; position: relative; padding: 4px; }
+    .nav-btn.active { color: var(--gold); font-weight: 900; }
+    .badge-dot { position: absolute; top: 2px; right: 2px; background: var(--gold); color: #FFF; border-radius: 9999px; font-size: 9px; font-weight: 900; padding: 0 4px; font-family: monospace; }
+
+    /* Crash-proof Admin Modal */
+    .admin-modal { position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 12px; }
+    .admin-modal.open { display: flex; }
+    .admin-card { background: #141416; color: #FFF; border: 1px solid var(--gold); border-radius: 20px; max-width: 720px; width: 100%; height: 86vh; display: flex; flex-direction: column; overflow: hidden; text-align: right; }
+    .input-box { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 8px 10px; color: #FFF; font-size: 12px; font-family: inherit; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <!-- Onboarding Modal -->
+  <div id="onboardOverlay" style="display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#18181C; border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:22px; max-width:380px; width:100%; color:#FFF; text-align:right;">
+      <img src="https://i.ibb.co/6JVM8n4K/Screenshot-20261001-080136-Instagram.jpg" alt="براند زينب" style="width:64px; height:64px; border-radius:16px; object-fit:cover; margin:0 auto 10px; display:block; border:1px solid var(--soft-rose);">
+      <h3 style="font-size:18px; font-weight:900; text-align:center; color:var(--soft-rose);">أهلاً بكِ في براند زينب</h3>
+      <p style="font-size:11px; text-align:center; color:#AAA; margin:4px 0 16px;">Brand Zainab · العناية الطبيعية الفاخرة</p>
+      <form onsubmit="handleOnboard(event)" style="display:flex; flex-direction:column; gap:10px;">
+        <label style="font-size:11px; color:#AAA;">الاسم الكريم *</label>
+        <input type="text" id="onbName" required class="input-box" placeholder="الاسم الكامل...">
+        <label style="font-size:11px; color:#AAA;">رقم الهاتف وتأكيده *</label>
+        <input type="tel" id="onbPhone" required class="input-box" placeholder="0770xxxxxxx">
+        <input type="tel" id="onbPhoneConf" required class="input-box" placeholder="تأكيد رقم الهاتف...">
+        <button type="submit" class="btn-gold" style="margin-top:6px; width:100%;">دخول المتجر</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-box">
+      <div class="header-row">
+        <div class="brand-tag">
+          <img src="https://i.ibb.co/6JVM8n4K/Screenshot-20261001-080136-Instagram.jpg" alt="براند زينب" class="brand-logo-img">
+          <div>
+            <div style="font-size:16px;">براند زينب</div>
+            <div style="font-size:9px; color:var(--muted); letter-spacing:1px;">Brand Zainab · Luxury Care</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button onclick="switchTab('wallet')" style="display:flex; align-items:center; gap:5px; padding:5px 10px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:11px; font-weight:800; cursor:pointer;">
+            <span style="color:var(--gold);">محفظتي:</span>
+            <span id="topWalletSum" style="font-family:monospace;">0 د.ع</span>
+          </button>
+        </div>
+      </div>
+      <div id="searchWrap">
+        <input type="text" oninput="handleSearch(this.value)" placeholder="ابحثي عن منتج، بكج، أو مكون طبيعي..." class="search-input">
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main class="app-box">
+
+    <!-- TAB 1: HOME PRODUCTS -->
+    <section id="tabHome" style="display:flex; flex-direction:column; gap:16px;">
+      <div style="padding:10px 14px; border-radius:14px; border:1px solid var(--border); background:var(--card); display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+        <span style="color:var(--gold); font-weight:800;">شحن سريع لكافة محافظات العراق · الدفع عند الاستلام (COD)</span>
+        <span id="userGreeting" style="font-weight:700;">عميلة براند زينب</span>
+      </div>
+      <div class="panels-track">
+        <div id="productsList" style="display:flex; flex-direction:column; gap:20px; position:relative; z-index:2;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: USER WALLET -->
+    <section id="tabWallet" style="display:none; flex-direction:column; gap:16px; text-align:right;">
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <h3 style="font-size:17px; font-weight:900;">محفظة العناية التراكمية</h3>
+            <p style="font-size:11px; color:var(--muted);">تتراكم بها قيمة الفواتير المعتمدة من الإدارة لترقية عضويتكِ.</p>
+          </div>
+          <div style="background:#FAF7F2; border:1px solid #EAE4DC; padding:8px 14px; border-radius:14px; text-align:center;">
+            <span style="font-size:10px; color:var(--muted); font-weight:700;">الرصيد المكتمل:</span>
+            <div id="walletTotal" style="font-size:18px; font-weight:900; color:var(--soft-rose); font-family:monospace;">0 د.ع</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <h4 style="font-size:13px; font-weight:900;">سجل طلباتكِ وتفاصيل الفواتير</h4>
+        <div id="userOrdersList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: AI BEAUTY ASSISTANT (Continuous Chat Memory) -->
+    <section id="tabAi" style="display:none; flex-direction:column; gap:12px; text-align:right;">
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:18px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="font-size:15px; font-weight:900; color:var(--soft-rose);">AI براند زينب (ذاكرة محادثة مستمرة)</h3>
+          <p style="font-size:10px; color:var(--muted);">يتذكر كلامچ السابق وينصحچ بأفضل روتين طبيعي</p>
+        </div>
+        <button onclick="resetAiChat()" class="btn-outline" style="padding:6px 12px; font-size:11px; font-weight:bold; cursor:pointer;">🔄 دردشة جديدة</button>
+      </div>
+
+      <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;">
+        <button onclick="sendQuickPrompt('عندي تساقط بشعري شنو الحل؟')" class="btn-outline" style="padding:4px 8px; font-size:10px; white-space:nowrap;">تساقط الشعر</button>
+        <button onclick="sendQuickPrompt('بشرتي بيها تصبغات وجافة')" class="btn-outline" style="padding:4px 8px; font-size:10px; white-space:nowrap;">تصبغات البشرة</button>
+        <button onclick="sendQuickPrompt('شنو فوائد بكج النيلة المغربية؟')" class="btn-outline" style="padding:4px 8px; font-size:10px; white-space:nowrap;">بكج النيلة</button>
+      </div>
+
+      <div id="chatFeed" style="background:rgba(0,0,0,0.02); border:1px solid var(--border); border-radius:18px; padding:14px; min-height:280px; max-height:400px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;"></div>
+
+      <form onsubmit="handleAiSubmit(event)" style="display:flex; gap:6px;">
+        <input type="text" id="aiInput" placeholder="اسألي خبيرة براند زينب عن أي مشكلة..." class="search-input" style="padding:10px 12px;">
+        <button type="submit" id="aiSendBtn" class="btn-gold" style="padding:10px 16px;">إرسال</button>
+      </form>
+    </section>
+
+    <!-- TAB 4: LEADERBOARD -->
+    <section id="tabLeaderboard" style="display:none; flex-direction:column; gap:14px; text-align:right;">
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-size:16px; font-weight:900;">لوحة الصدارة الملكية (شهرين)</h3>
+          <span style="font-family:monospace; font-size:11px; background:#F7F2EC; border:1px solid #E8DEC8; padding:3px 8px; border-radius:6px; color:var(--soft-rose); font-weight:bold;">59 يوم متبقي</span>
+        </div>
+        <p style="font-size:11px; color:var(--muted);">الفائزات بالمراكز الأولى يحصلن على بكجات وهدايا ملكية مجانية بنهاية الدورة.</p>
+        <div id="leaderboardList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 5: SETTINGS -->
+    <section id="tabSettings" style="display:none; flex-direction:column; gap:14px; text-align:right;">
+      <!-- 1. Customer Profile Information Card -->
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-size:15px; font-weight:900; color:var(--soft-rose);">الملف الشخصي للعميلة</h3>
+          <span id="settingsUserTier" style="font-size:10px; font-weight:bold; background:#F5ECE8; color:#8C4A57; border:1px solid #E8DAD7; padding:3px 8px; border-radius:6px;">عضوية برونزية</span>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background:rgba(0,0,0,0.02); border:1px solid var(--border); padding:12px; border-radius:14px; font-size:12px;">
+          <div>
+            <span style="color:var(--muted); font-size:10px; display:block;">الاسم الكريم:</span>
+            <b id="settingsUserName">غير مسجل</b>
+          </div>
+          <div>
+            <span style="color:var(--muted); font-size:10px; display:block;">رقم الهاتف:</span>
+            <b id="settingsUserPhone" style="font-family:monospace;">غير مسجل</b>
+          </div>
+          <div>
+            <span style="color:var(--muted); font-size:10px; display:block;">رصيد المشتريات المكتملة:</span>
+            <b id="settingsUserSpent" style="font-family:monospace; color:var(--soft-rose);">0 د.ع</b>
+          </div>
+          <div>
+            <span style="color:var(--muted); font-size:10px; display:block;">عدد الطلبات الكلي:</span>
+            <b id="settingsUserOrdersCount" style="font-family:monospace;">0</b>
+          </div>
+        </div>
+
+        <button onclick="editUserProfile()" class="btn-outline" style="font-size:11px; padding:8px 12px; color:var(--burgundy); border-color:var(--soft-rose);">
+          تعديل بيانات الحساب (تحديث الاسم ورقم الهاتف)
+        </button>
+      </div>
+
+      <!-- 2. Available Promo Codes Card -->
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3 style="font-size:15px; font-weight:900;">أكواد الخصم الترويجية المتاحة (محمية ومحدودة الاستخدام)</h3>
+            <span style="font-size:10px; color:var(--muted);">سارية على كافة المنتجات والبكجات</span>
+          </div>
+          <span style="font-size:10px; background:#F5ECE8; color:#8C4A57; border:1px solid #E8DAD7; padding:2px 8px; border-radius:6px; font-weight:bold;">عام للجميع</span>
+        </div>
+
+        <div id="settingsPromoCodesList" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Dynamically populated promo code cards with copy and apply buttons -->
+        </div>
+      </div>
+
+      <!-- 3. General Settings & Support Card -->
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+        <h3 style="font-size:15px; font-weight:900;">إعدادات العرض والدعم</h3>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:10px; font-size:12px;">
+          <span>النمط الليلي / النهاري</span>
+          <button onclick="toggleTheme()" class="btn-outline" id="themeBtn" style="padding:6px 14px; font-size:11px;">الوضع الليلي</button>
+        </div>
+
+        <button onclick="reportIssue()" class="btn-outline" style="font-size:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+          <span>الإبلاغ عن مشكلة أو استفسار لفريق الدعم</span>
+          <span>←</span>
+        </button>
+
+        <a href="https://www.instagram.com/ladybioo?stkn=YmVsMWxraW5qd3pl" target="_blank" class="btn-gold" style="text-decoration:none; justify-content:space-between; font-size:12px; padding:10px 14px;">
+          <span>حساب إنستغرام الرسمي (@ladybioo)</span>
+          <span>↗</span>
+        </a>
+
+        <div style="text-align:center; padding-top:12px; border-top:1px solid var(--border);">
+          <button onmousedown="adminHoldStart()" onmouseup="adminHoldEnd()" ontouchstart="adminHoldStart()" ontouchend="adminHoldEnd()" style="background:none; border:none; color:var(--gold); font-size:11px; font-weight:900; cursor:pointer;">
+            صُنِعَ بواسطة NEXAURON.STUDIO
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Cart Drawer -->
+  <div id="cartOverlay" class="cart-overlay" onclick="if(event.target===this) toggleCart(false)">
+    <div id="cartDrawer" class="cart-drawer">
+      <div style="padding:12px 16px; background:#18181A; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+        <div><h4 style="font-size:13px; font-weight:900;">صندوق مشتريات براند زينب</h4><span 
